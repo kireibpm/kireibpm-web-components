@@ -1,0 +1,70 @@
+name: Crowdin download
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+
+jobs:
+  download-l10n-from-crowdin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Retrieve secrets from Keeper
+        uses: Keeper-Security/ksm-action@master
+        with:
+          keeper-secret-config: ${{ secrets.KSM_CONFIG }}
+          secrets: |
+            ${{ vars.KEEPER_CROWDIN_RECORD_ID }}/field/login > env:CROWDIN_PROJECT_ID
+            ${{ vars.KEEPER_CROWDIN_RECORD_ID }}/field/password > env:CROWDIN_PERSONAL_TOKEN
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.BONITA_CI_PAT }}
+
+      - name: Install crowdin-cli
+        run: |
+          sudo wget -qO - https://artifacts.crowdin.com/repo/GPG-KEY-crowdin | sudo apt-key add -
+          sudo touch /etc/apt/sources.list.d/crowdin.list
+          sudo add-apt-repository "deb https://artifacts.crowdin.com/repo/deb/ /" 
+          sudo apt-get update && \
+          sudo apt-get install -y --no-install-recommends \
+          crowdin3 \
+          apt-transport-https
+
+      - name: Download l10n
+        run: crowdin pull -b ${{ github.ref_name }} -l fr -l ja -l es-ES -l pt-BR --no-progress
+
+      - name: Git Setup
+        id: git-setup
+        uses: bonitasoft/git-setup-action@v1
+        with:
+          keeper-secret-config: ${{ secrets.KSM_CONFIG }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        id: create-pr
+        with:
+          git-token: ${{ secrets.BONITA_CI_PAT }} # Required to trigger build workflow on pr
+          branch: feat/${{ github.ref_name}}/update-translations
+          base: ${{ github.ref_name }}
+          author: ${{ steps.git-setup.outputs.name}} <${{ steps.git-setup.outputs.email}}>
+          committer: ${{ steps.git-setup.outputs.name}} <${{ steps.git-setup.outputs.email}}>
+          commit-message: "chore(l10n) update translations"
+          title: "[${{ github.ref_name }}] Translations update"
+          body: |
+            Latest translations made in [Crowdin](https://crowdin.com/project/bonita)
+
+      - name: Send failure message to Slack channel
+        if: failure()
+        uses: bonitasoft/notify-slack-action@v1
+        with:
+          keeper-secret-config: ${{ secrets.KSM_CONFIG }}
+          channel-id: ${{ vars.UID_SLACK_CHANNEL_ID }}
+          message: |
+            :fire:  Download l10n from Crowdin for ${{ github.ref_name }} failed.
+            
+            @channel *We need someone* !
+            
+            - Add a :fire_extinguisher:if you take the action to resolve the conflicts (only one person is required)
+            - Add a :sweat_drops: when it’s done (and eventually a :party_parrot: )"

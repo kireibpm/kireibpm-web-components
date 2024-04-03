@@ -1,0 +1,52 @@
+name: Crowdin upload
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'master'
+      - 'dev'
+      - 'release-*'
+    paths:  
+      - '**/messages.properties'
+      - '**/plugin.properties' 
+  
+jobs:
+  upload-source-to-crowdin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Retrieve secrets from Keeper
+        uses: Keeper-Security/ksm-action@master
+        with:
+          keeper-secret-config: ${{ secrets.KSM_CONFIG }}
+          secrets: |
+            ${{ vars.KEEPER_CROWDIN_RECORD_ID }}/field/login > env:CROWDIN_PROJECT_ID
+            ${{ vars.KEEPER_CROWDIN_RECORD_ID }}/field/password > env:CROWDIN_PERSONAL_TOKEN
+
+      - name: Checkout Bonita Studio
+        uses: actions/checkout@v4
+          
+      - name: Upload to crowdin
+        uses: crowdin/github-action@v1
+        with:
+          upload_sources: true
+          push_translations: false
+          download_translations: false
+          auto_approve_imported: true
+          import_eq_suggestions: true
+          create_pull_request: false
+          crowdin_branch_name: "${{ github.ref_name }}"
+
+      - name: Send message to Slack channel
+        if: failure()
+        uses: bonitasoft/notify-slack-action@v1
+        with:
+          keeper-secret-config: ${{ secrets.KSM_CONFIG }}
+          channel-id: ${{ vars.UID_SLACK_CHANNEL_ID }}
+          message: |
+            :fire:  Upload l10n from Crowdin for ${{ github.ref_name }} failed.
+            
+            @channel *We need someone* !
+            
+            - Add a :fire_extinguisher:if you take the action to resolve the conflicts (only one person is required)
+            - Add a :sweat_drops: when it’s done (and eventually a :party_parrot: )"
