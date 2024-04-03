@@ -5,12 +5,9 @@ on:
   push:
     branches:
       - 'master'
-      - 'dev'
-      - 'release-*'
     paths:  
-      - '**/messages.properties'
-      - '**/plugin.properties' 
-  
+      - 'components/packages/**/src/i18n/en.json'
+     
 jobs:
   upload-source-to-crowdin:
     runs-on: ubuntu-latest
