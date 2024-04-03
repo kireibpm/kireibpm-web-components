@@ -1,0 +1,38 @@
+project_id_env: "CROWDIN_PROJECT_ID"
+api_token_env: "CROWDIN_PERSONAL_TOKEN"
+preserve_hierarchy: true
+base_path: "."
+
+files:
+  - source: "components/packages/misc/pagination-selector/src/i18n/en.json"
+    dest: "/web-components/pagination-selector/en.json"
+    translation: "components/packages/misc/pagination-selector/src/i18n/%two_letters_code%.json"
+    type: "json"
+    languages_mapping:
+      two_letters_code:
+        "fr": "fr"
+        "es-ES": "es-ES"
+        "ja": "ja"
+        "pt-BR": "pt-BR"
+
+  - source: "components/packages/misc/query-selector/src/i18n/en.json"
+    dest: "/web-components/query-selector/en.json"
+    translation: "components/packages/misc/query-selector/src/i18n/%two_letters_code%.json"
+    type: "json"
+    languages_mapping:
+      two_letters_code:
+        "fr": "fr"
+        "es-ES": "es-ES"
+        "ja": "ja"
+        "pt-BR": "pt-BR"
+
+  - source: "components/packages/misc/search-box/src/i18n/en.json"
+    dest: "/web-components/search-box/en.json"
+    translation: "components/packages/misc/search-box/src/i18n/%two_letters_code%.json"
+    type: "json"
+    languages_mapping:
+      two_letters_code:
+        "fr": "fr"
+        "es-ES": "es-ES"
+        "ja": "ja"
+        "pt-BR": "pt-BR"
