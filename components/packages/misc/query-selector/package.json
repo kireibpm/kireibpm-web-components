@@ -14,9 +14,9 @@
 		"lit-translate": "^1.2.1"
 	},
 	"devDependencies": {
+		"@kireibpm/pagination-selector": "^1.0.4",
+		"@kireibpm/search-box": "^1.0.5",
 		"@open-wc/lit-helpers": "^0.2.10",
-		"@kireibpm/pagination-selector": "^1.0.7",
-		"@kireibpm/search-box": "^1.0.9",
 		"ts-loader": "^9.2.6",
 		"tslib": "^2.3.1",
 		"typescript": "^4.5.2"
@@ -24,13 +24,5 @@
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/kireibpm/kireibpm-web-components.git"
-	},
-	"scripts": {
-		"start": "rollup -c -w --environment devMode:true",
-		"lint": "prettier --write \"src/**/*.{js,ts,tsx}\"",
-		"bundle": "tsc && rollup -c",
-		"clean": "rm -rf build lib node_modules",
-		"pack": "npm pack",
-		"publish": "npm publish"
 	}
 }

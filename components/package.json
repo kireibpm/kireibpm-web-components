@@ -3,7 +3,7 @@
   "private": true,
   "license": "GPL-2.0-only",
   "workspaces": [
-    "packages/*"
+    "packages/**/*"
   ],
   "version": "0.0.1",
   "devDependencies": {
