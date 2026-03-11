@@ -9,6 +9,7 @@ jobs:
   download-l10n-from-crowdin:
     runs-on: ubuntu-latest
     env:
+      DEFAULT_BRANCH: ${{ github.event.repository.default_branch || 'master' }}
       CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
       CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
     steps:
@@ -28,7 +29,7 @@ jobs:
           apt-transport-https
 
       - name: Download l10n
-        run: crowdin pull -b ${{ github.ref_name }} -l fr -l ja -l es-ES -l pt-BR --no-progress
+        run: crowdin pull -b "$DEFAULT_BRANCH" -l fr -l ja -l es-ES -l pt-BR --no-progress
 
       - name: Configure git
         run: |
@@ -40,11 +41,11 @@ jobs:
         id: create-pr
         with:
           token: ${{ github.token }}
-          branch: feat/${{ github.ref_name}}/update-translations
-          base: ${{ github.ref_name }}
+          branch: feat/${{ env.DEFAULT_BRANCH }}/update-translations
+          base: ${{ env.DEFAULT_BRANCH }}
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           commit-message: "chore(l10n) update translations"
-          title: "[${{ github.ref_name }}] Translations update"
+          title: "[${{ env.DEFAULT_BRANCH }}] Translations update"
           body: |
             Latest translations made in Crowdin for KireiBPM web components.

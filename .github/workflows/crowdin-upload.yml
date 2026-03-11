@@ -12,6 +12,7 @@ jobs:
   upload-source-to-crowdin:
     runs-on: ubuntu-latest
     env:
+      DEFAULT_BRANCH: ${{ github.event.repository.default_branch || 'master' }}
       CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
       CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
     steps:
@@ -27,4 +28,4 @@ jobs:
           auto_approve_imported: true
           import_eq_suggestions: true
           create_pull_request: false
-          crowdin_branch_name: "${{ github.ref_name }}"
+          crowdin_branch_name: "${{ env.DEFAULT_BRANCH }}"
