@@ -11,4 +11,4 @@ It contains the web components used by the UI Designer Switch feature.
 
 # License
 
-This repository is distributed as Open Source software under the GNU General Public License version 2. See the root [LICENSE](LICENSE) file for details.
+This repository is distributed as Open Source software under the GNU General Public License, version 2 or any later version. See the root [LICENSE](LICENSE) file for details.

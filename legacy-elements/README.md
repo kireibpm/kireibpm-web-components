@@ -82,4 +82,4 @@ With it,you can write your test in ES6.
 
 # License
 
-This module is distributed as Open Source software under the GNU General Public License version 2. See the repository root LICENSE file for details.
+This module is distributed as Open Source software under the GNU General Public License, version 2 or any later version. See the repository root LICENSE file for details.

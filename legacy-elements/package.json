@@ -2,7 +2,7 @@
   "name": "build-web-component",
   "version": "1.0.1",
   "description": "",
-  "license": "GPL-2.0-only",
+  "license": "GPL-2.0-or-later",
   "dependencies": {
     "@babel/runtime": "^7.3.4",
     "@webcomponents/webcomponentsjs": "^2.2.7",

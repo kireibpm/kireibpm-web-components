@@ -3,7 +3,7 @@
 	"version": "1.0.5",
 	"description": "A query selector",
 	"homepage": "https://github.com/kireibpm/kireibpm-web-components/tree/main/components/packages/misc/query-selector#readme",
-	"license": "GPL-2.0-only",
+	"license": "GPL-2.0-or-later",
 	"module": "lib/query-selector.es5.min.js",
 	"files": [
 		"lib"
