@@ -1,8 +1,8 @@
 {
-  "name": "@bonitasoft/pagination-selector",
+  "name": "@kireibpm/pagination-selector",
   "version": "1.0.4",
   "description": "A pagination selector",
-  "homepage": "https://github.com/bonitasoft/web-components/tree/master/components/packages/misc/pagination-selector",
+  "homepage": "https://github.com/kireibpm/kireibpm-web-components/tree/main/components/packages/misc/pagination-selector",
   "license": "LicenseRef-LICENSE",
   "module": "lib/pagination-selector.es5.min.js",
   "files": [
@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bonitasoft/web-components.git"
+    "url": "git+https://github.com/kireibpm/kireibpm-web-components.git"
   },
   "scripts": {
     "start": "tsc && rollup -c -w --environment devMode:true",

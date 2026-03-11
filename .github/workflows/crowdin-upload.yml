@@ -20,7 +20,7 @@ jobs:
             ${{ vars.KEEPER_CROWDIN_RECORD_ID }}/field/login > env:CROWDIN_PROJECT_ID
             ${{ vars.KEEPER_CROWDIN_RECORD_ID }}/field/password > env:CROWDIN_PERSONAL_TOKEN
 
-      - name: Checkout Bonita Studio
+      - name: Checkout KireiBPM web components
         uses: actions/checkout@v4
           
       - name: Upload to crowdin

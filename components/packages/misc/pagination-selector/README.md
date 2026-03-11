@@ -1,6 +1,6 @@
 # `pagination-selector`
 
-![npmVersion](https://img.shields.io/npm/v/@bonitasoft/pagination-selector?color=blue&style=plastic)
+![npmVersion](https://img.shields.io/npm/v/@kireibpm/pagination-selector?color=blue&style=plastic)
 
 Pagination selector web component. Provide a UI to enter number of elements and page number.
 
@@ -17,8 +17,8 @@ Generates a `paginationChanged` event when a value is entered
 
 Run:
 
-    npm install @bonitasoft/pagination-selector
+    npm install @kireibpm/pagination-selector
 
-Then import `node_modules/@bonitasoft/pagination-selector/lib/pagination-selector.es5.min.js`
+Then import `node_modules/@kireibpm/pagination-selector/lib/pagination-selector.es5.min.js`
 
 And you can use new html tag `<pagination-selector lang="fr" nb-elements="20" page-index="1"></pagination-selector>`
