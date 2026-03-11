@@ -3,7 +3,7 @@
   "version": "1.0.4",
   "description": "A pagination selector",
   "homepage": "https://github.com/kireibpm/kireibpm-web-components/tree/main/components/packages/misc/pagination-selector",
-  "license": "LicenseRef-LICENSE",
+  "license": "GPL-2.0-only",
   "module": "lib/pagination-selector.es5.min.js",
   "files": [
     "lib"
