@@ -1,100 +1,106 @@
-import {css, customElement, html, LitElement, property} from 'lit-element';
-import {classMap} from 'lit-html/directives/class-map.js';
-// @ts-ignore
-import {live} from '@open-wc/lit-helpers';
+import { css, customElement, html, LitElement, property, PropertyValues } from 'lit-element';
+import { classMap } from 'lit-html/directives/class-map.js';
 import '@kireibpm/search-box';
 import '@kireibpm/pagination-selector';
 // @ts-ignore
 import bootstrapStyles from './style.scss';
-import {registerTranslateConfig, translate, use} from "lit-translate";
-import * as i18n_en from "./i18n/en.json";
-import * as i18n_es from "./i18n/es-ES.json";
-import * as i18n_fr from "./i18n/fr.json";
-import * as i18n_ja from "./i18n/ja.json";
-import * as i18n_pt from "./i18n/pt-BR.json";
+import { registerTranslateConfig, translate, use } from 'lit-translate';
+import * as i18n_en from './i18n/en.json';
+import * as i18n_es from './i18n/es-ES.json';
+import * as i18n_fr from './i18n/fr.json';
+import * as i18n_ja from './i18n/ja.json';
+import * as i18n_pt from './i18n/pt-BR.json';
 
-// Registers i18n loader
 registerTranslateConfig({
-    loader: (lang) => Promise.resolve(QuerySelector.getCatalog(lang))
+  loader: (lang: string) => Promise.resolve(QuerySelector.getCatalog(lang)),
 });
+
+interface QueryFilter {
+  name: string;
+  type: string;
+  value?: string;
+}
+
+interface QueryDefinition {
+  displayName?: string;
+  name?: string;
+  query?: string;
+  filters?: QueryFilter[];
+}
+
+interface QueryCollection {
+  defaultQuery: QueryDefinition[];
+  additionalQuery: QueryDefinition[];
+}
+
+interface QueryInit {
+  query?: { name?: string };
+  filters?: QueryFilter[];
+  pagination?: { c?: string; p?: string };
+}
+
+interface PaginationElement {
+  pageIndex: string;
+  nbElements: string;
+}
 
 @customElement('query-selector')
 export class QuerySelector extends LitElement {
+  @property({ attribute: 'lang', type: String, reflect: true })
+  lang = 'en';
 
-    @property({attribute: 'lang', type: String, reflect: true})
-    lang: string = "en";
+  @property({ attribute: 'queries', type: Object, reflect: true })
+  private queries: QueryCollection = { defaultQuery: [], additionalQuery: [] };
 
-    @property({attribute: 'queries', type: Object, reflect: true})
-    private queries: any = {"defaultQuery": [], "additionalQuery": []};
+  @property({ attribute: 'init', type: Object, reflect: true })
+  private init: QueryInit | null = null;
 
-    @property({
-        attribute: 'init', type: Object, reflect: true
-    })
-    private init: any;
+  @property({ type: String })
+  private selectedQuery = '';
 
-    @property({
-        type: String
-    })
-    private selectedQuery = '';
+  @property({ type: Array })
+  private filterArgs: QueryFilter[] = [];
 
-    @property({type: Array})
-    private filterArgs : any = [];
+  @property({ type: String })
+  private queryFilter = '';
 
-    @property({type: String})
-    private queryFilter = '';
+  @property({ attribute: false })
+  private paginationElement: PaginationElement = { pageIndex: '0', nbElements: '10' };
 
-    private paginationElement: PaginationElement = { pageIndex: "0", nbElements: "10"};
+  connectedCallback() {
+    super.connectedCallback();
+    this.loadLanguage();
+    this.syncStateFromInput();
+  }
 
-    attributeChangedCallback(name: string, old: string | null, value: string | null): void {
-        if (name === 'init') {
-            try {
-                let valueInit = JSON.parse(value!);
-                if (valueInit.hasOwnProperty('query')) {
-                    this.selectedQuery = valueInit.query.name;
-                    this.filterArgs = valueInit.filters;
-                }
-            } catch (e) {
-                //do nothing
-            }
-        }
-        if (name === 'queries') {
-            try {
-                let valueQueries = JSON.parse(value!);
-                if (!valueQueries.hasOwnProperty('defaultQuery')) {
-                    valueQueries.defaultQuery = [];
-                }
-                if (!valueQueries.hasOwnProperty('additionalQuery')) {
-                    valueQueries.additionalQuery = [];
-                }
-            } catch (e) {
-                //do nothing
-            }
-        }
-        if (name === 'lang') {
-            use(this.lang).then();
-        }
-        super.attributeChangedCallback(name, old, value);
+  protected updated(changedProperties: PropertyValues) {
+    if (changedProperties.has('lang')) {
+      this.loadLanguage();
     }
-
-    static getCatalog(lang: string) {
-        switch (lang) {
-            case "es":
-            case "es-ES":
-                return i18n_es;
-            case "fr":
-                return i18n_fr;
-            case "ja":
-                return i18n_ja;
-            case "pt":
-            case "pt-BR":
-                return i18n_pt;
-            default:
-                return i18n_en;
-        }
+    if (changedProperties.has('queries') || changedProperties.has('init')) {
+      this.syncStateFromInput();
     }
+  }
 
-    static get styles() {
-        return css`
+  static getCatalog(lang: string) {
+    switch (lang) {
+      case 'es':
+      case 'es-ES':
+        return i18n_es;
+      case 'fr':
+        return i18n_fr;
+      case 'ja':
+        return i18n_ja;
+      case 'pt':
+      case 'pt-BR':
+        return i18n_pt;
+      default:
+        return i18n_en;
+    }
+  }
+
+  static get styles() {
+    return css`
       :host {
         display: block;
         font-family: sans-serif;
@@ -109,7 +115,6 @@ export class QuerySelector extends LitElement {
 
       .filter-item {
         padding: 5px;
-        // flex-basis: 18em;
         flex-grow: 1;
         max-width: 50%;
       }
@@ -142,239 +147,218 @@ export class QuerySelector extends LitElement {
         text-align: center;
         font-style: italic;
       }
+
       search-box {
         --max-width: 100%;
       }
+
       .card-deck {
         margin-bottom: 15px;
       }
     `;
-    }
+  }
 
-    render() {
-        return html`
+  render() {
+    const normalizedQueries = this.normalizeQueries(this.queries);
+
+    return html`
       <style>${bootstrapStyles}</style>
-      <div class="guide">
-        ${translate("help")}
-      </div>
-      <!-- Query card -->
-      <search-box
-        lang="${this.lang}"
-        id="searchbox"
-        @valueChange=${(e: any) => {
-            this.queryFilterChanged(e.detail);
-        }}
-      ></search-box>
+      <div class="guide">${translate('help')}</div>
+      <search-box lang=${this.lang} id="searchbox" @valueChange=${this.handleSearchChange}></search-box>
       <div class="card-deck">
-        <!-- Default Queries-->
-        <div id="defaultQueries" class="card">
-          <div class="card-header">
-            <b>${translate("defaultQueriesTitle")}</b>
-          </div>
-          <ul class="list-group scroll" id="queries">          
-            ${this.queries.hasOwnProperty('defaultQuery') ? this.queries.defaultQuery!.map((query: any) => this.getDefaultQueries(query)):''}
-          </ul>
-        </div>
+        ${this.renderQueryCard('defaultQueries', 'defaultQueriesTitle', normalizedQueries.defaultQuery, true)}
+        ${this.renderQueryCard('additionalQueries', 'additionalQueriesTitle', normalizedQueries.additionalQuery, false)}
+      </div>
 
-        <!-- Additional Queries-->
-        <div id="additionalQueries" class="card">
-          <div class="card-header">
-            <b>${translate("additionalQueriesTitle")}</b>
-          </div>
-          <ul class="list-group scroll" id="queries">
-            ${this.queries.hasOwnProperty('additionalQuery') ? this.queries.additionalQuery!.map((query: any) => this.getAdditionalQueries(query)):''}
-          </ul>
-        </div>
-      </div>      
-
-      <!-- Filter card -->
       ${this.filterArgs.length > 0
-            ? html`
+        ? html`
             <div id="filter" class="card">
               <div class="card-header">
-                <b>${translate("filterTitlePrefix")} </b>
+                <b>${translate('filterTitlePrefix')} </b>
                 <b>${this.selectedQuery} </b>
               </div>
-              <div class="filter-container">                
-                ${this.filterArgs.map(
-                (arg: any) => html`                    
-                    <div class="filter-item required">
-                      <label class="control-label" for="arg">${arg.name}</label>
-                      <div class="input-group filter-input">
-                        <input
-                          type="text"
-                          class="form-control filter-input"
-                          id="arg"
-                          .value=${live(this.getFilterValue(this.selectedQuery, arg.name))}
-                          placeholder=${QuerySelector.getFilterPlaceholder(arg.type)}
-                          @input=${(e: any) => this.filterArgChanged(arg, e.target.value)}
-                        />
-                        <div class="input-group-append">
-                          <span class="input-group-text filter-input">¶</span>
-                        </div>
-                      </div>
-                    </div>
-                  `,
-            )}
-              </div>
+              <div class="filter-container">${this.filterArgs.map((filter) => this.renderFilterField(filter))}</div>
             </div>
           `
-            : html``}
+        : html``}
 
-      <!-- Pagination -->
       <pagination-selector
-        lang="${this.lang}"
-        nb-elements="${this.getPaginationNbElements()}" 
-        page-index="${this.getPaginationPageIndex()}"
-        @paginationChanged=${(e: any) => {
-            this.paginationChanged(e.detail);
-        }}
+        lang=${this.lang}
+        nb-elements=${this.paginationElement.nbElements}
+        page-index=${this.paginationElement.pageIndex}
+        @paginationChanged=${this.handlePaginationChange}
       ></pagination-selector>
       <br />
-
-      <!-- Tips-->
       <div class="tip">
-      <p>💡 ${translate("tip1")}</p>
-      <p>💡 ${translate("tip2")}</p>
+        <p>💡 ${translate('tip1')}</p>
+        <p>💡 ${translate('tip2')}</p>
       </div>
     `;
-    }
+  }
 
-    //
-    // Private methods
-    //
-    private getDefaultQueries(query: any) {
-        return html`
-      ${this.isFiltered(query.displayName)
-            ? html`
-            <li
-              class="list-group-item list-group-item-action ${classMap(this.isSelected(query.query) ? {active: true} : {})}"
-              @click="${() => this.select(query)}"
-            >
-              ${query.displayName}
-            </li>
-          `
-            : html``}
+  private renderQueryCard(
+    id: string,
+    titleKey: string,
+    queryList: QueryDefinition[],
+    useDisplayName: boolean,
+  ) {
+    return html`
+      <div id=${id} class="card">
+        <div class="card-header">
+          <b>${translate(titleKey)}</b>
+        </div>
+        <ul class="list-group scroll" id="queries">
+          ${queryList.filter((query) => this.matchesSearch(query)).map((query) => this.renderQueryItem(query, useDisplayName))}
+        </ul>
+      </div>
     `;
-    }
+  }
 
-    private getAdditionalQueries(query: any) {
-        return html`
-      ${this.isFiltered(query.displayName)
-            ? html`
-            <li
-              class="list-group-item list-group-item-action 
-                        ${classMap(this.isSelected(query.query) ? {active: true} : {})}"
-              @click="${() => this.select(query)}"
-            >
-              ${query.query}
-            </li>
-          `
-            : html``}
+  private renderQueryItem(query: QueryDefinition, useDisplayName: boolean) {
+    const queryName = this.getQueryName(query);
+    const label = useDisplayName ? query.displayName || queryName : query.query || queryName;
+
+    return html`
+      <li
+        class="list-group-item list-group-item-action ${classMap({ active: this.selectedQuery === queryName })}"
+        @click=${() => this.selectQuery(query)}
+      >
+        ${label}
+      </li>
     `;
+  }
+
+  private renderFilterField(filter: QueryFilter) {
+    return html`
+      <div class="filter-item required">
+        <label class="control-label" for=${filter.name}>${filter.name}</label>
+        <div class="input-group filter-input">
+          <input
+            id=${filter.name}
+            type="text"
+            class="form-control filter-input"
+            .value=${filter.value || ''}
+            placeholder=${QuerySelector.getFilterPlaceholder(filter.type)}
+            @input=${(event: Event) => this.updateFilterValue(filter.name, (event.target as HTMLInputElement).value)}
+          />
+          <div class="input-group-append">
+            <span class="input-group-text filter-input">¶</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  private normalizeQueries(value: QueryCollection | null | undefined): QueryCollection {
+    return {
+      defaultQuery: Array.isArray(value?.defaultQuery) ? value!.defaultQuery : [],
+      additionalQuery: Array.isArray(value?.additionalQuery) ? value!.additionalQuery : [],
+    };
+  }
+
+  private syncStateFromInput() {
+    const normalizedQueries = this.normalizeQueries(this.queries);
+    this.queries = normalizedQueries;
+
+    const init = this.init;
+    const selectedQuery = init?.query?.name || '';
+    const selectedDefinition = this.findQueryDefinition(selectedQuery, normalizedQueries);
+
+    this.selectedQuery = selectedQuery;
+    this.filterArgs = this.mergeFilters(selectedDefinition?.filters || [], init?.filters || []);
+    this.paginationElement = {
+      nbElements: init?.pagination?.c || '10',
+      pageIndex: init?.pagination?.p || '0',
+    };
+  }
+
+  private findQueryDefinition(queryName: string, queries: QueryCollection = this.queries) {
+    return [...queries.defaultQuery, ...queries.additionalQuery].find((query) => this.getQueryName(query) === queryName);
+  }
+
+  private mergeFilters(sourceFilters: QueryFilter[], initFilters: QueryFilter[]) {
+    return sourceFilters.map((filter) => {
+      const initialValue = initFilters.find((candidate) => candidate.name === filter.name);
+      return {
+        ...filter,
+        value: initialValue?.value || '',
+      };
+    });
+  }
+
+  private getQueryName(query: QueryDefinition) {
+    return query.query || query.name || '';
+  }
+
+  private matchesSearch(query: QueryDefinition) {
+    const searchValue = this.queryFilter.trim().toLowerCase();
+    if (!searchValue) {
+      return true;
     }
 
-    private isFiltered(query: string) {
-        return query.toLowerCase().includes(this.queryFilter);
-    }
+    return (query.displayName || '').toLowerCase().includes(searchValue);
+  }
 
-    private queryFilterChanged(value: string) {
-        this.queryFilter = value;
-    }
+  private async loadLanguage() {
+    await use(this.lang);
+  }
 
-    private filterArgChanged(arg: string, value: string) {
-        Object.assign(arg, {value: value});
-        let event: any = {"query": {"name": this.selectedQuery}};
-        event.filters = this.filterArgs;
-        this.sendEvent();
-    }
+  private handleSearchChange = (event: CustomEvent<string>) => {
+    this.queryFilter = (event.detail || '').toLowerCase();
+  };
 
-    private select(query: any) {
-        this.selectedQuery = query.query || query.name;
-        this.filterArgs= query.filters;
-        this.sendEvent();
-    }
+  private selectQuery(query: QueryDefinition) {
+    this.selectedQuery = this.getQueryName(query);
+    this.filterArgs = this.mergeFilters(query.filters || [], []);
+    this.emitQueryChanged();
+  }
 
-    private isSelected(queryName: string) {
-        return queryName === this.selectedQuery;
-    }
+  private updateFilterValue(filterName: string, value: string) {
+    this.filterArgs = this.filterArgs.map((filter) =>
+      filter.name === filterName
+        ? {
+            ...filter,
+            value,
+          }
+        : filter,
+    );
+    this.emitQueryChanged();
+  }
 
-    private getFilterValue(queryName: string, filterName: string): string {
-        let value = '';
-        if (this.init && this.init.query && this.init.filters && queryName === this.init.query.name) {
-            this.init.filters.forEach((filter: any) => {
-                if (filter.name === filterName) {
-                    value = filter.value ? filter.value : '';
-                }
-            });
-        }
-        return value;
-    }
+  private handlePaginationChange = (event: CustomEvent<PaginationElement>) => {
+    this.paginationElement = {
+      nbElements: event.detail.nbElements,
+      pageIndex: event.detail.pageIndex,
+    };
+    this.emitQueryChanged();
+  };
 
-    private paginationChanged(value: PaginationElement) {
-        this.paginationElement = value;
-        this.sendEvent();
-    }
+  private static getFilterPlaceholder(type: string) {
+    return `Type a ${QuerySelector.capitalizeFirstLetter((type || 'value').toLowerCase())}`;
+  }
 
-    private getPaginationNbElements(): string {
-        if (this.init && this.init.pagination && (this.init.query && this.selectedQuery === this.init.query.name)) {
-            this.paginationElement.nbElements = this.init.pagination.c;
-        }
-        return this.paginationElement.nbElements;
-    }
+  private static capitalizeFirstLetter(value: string) {
+    return value.charAt(0).toUpperCase() + value.slice(1);
+  }
 
-    private getPaginationPageIndex(): string {
-        if (this.init && this.init.pagination &&(this.init.query && this.selectedQuery === this.init.query.name)) {
-            this.paginationElement.pageIndex = this.init.pagination.p;
-        }
-        return this.paginationElement.pageIndex;
-    }
+  private emitQueryChanged() {
+    const validity = Boolean(this.selectedQuery)
+      && this.filterArgs.every((filter) => Boolean(filter.value))
+      && Boolean(this.paginationElement.nbElements)
+      && Boolean(this.paginationElement.pageIndex);
 
-    private static getFilterPlaceholder(type: string) {
-        return "Type a " + QuerySelector.capitalizeFirstLetter(type.toLowerCase());
-    }
-
-    private static capitalizeFirstLetter(str: string): string {
-        return str.charAt(0).toUpperCase() + str.slice(1);
-    }
-
-    private sendEvent() {
-        let valid = true;
-        // check a query is selected
-        if (!this.selectedQuery) {
-            valid = false;
-        }
-        // check every filter has a value
-        for (let filter of this.filterArgs) {
-            if (!filter.value) {
-                valid = false;
-                break;
-            }
-        }
-        // check paginationElement is all set
-        if (!this.paginationElement.pageIndex || !this.paginationElement.nbElements) {
-            valid = false;
-        }
-
-        // Send event
-        let eventDetail = {
-            validity: valid,
-            query: this.selectedQuery,
-            filters: this.filterArgs,
-            pagination: this.paginationElement
-        };
-        this.dispatchEvent(
-          new CustomEvent('queryChanged', {
-              detail: eventDetail,
-              bubbles: true,
-              composed: true,
-          }),
-        );
-    }
-}
-
-interface PaginationElement {
-    pageIndex: string;
-    nbElements: string;
+    this.dispatchEvent(
+      new CustomEvent('queryChanged', {
+        detail: {
+          validity,
+          query: this.selectedQuery,
+          filters: this.filterArgs,
+          pagination: this.paginationElement,
+        },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
 }
 
