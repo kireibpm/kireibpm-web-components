@@ -11,15 +11,10 @@ on:
 jobs:
   upload-source-to-crowdin:
     runs-on: ubuntu-latest
+    env:
+      CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+      CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
     steps:
-      - name: Retrieve secrets from Keeper
-        uses: Keeper-Security/ksm-action@master
-        with:
-          keeper-secret-config: ${{ secrets.KSM_CONFIG }}
-          secrets: |
-            ${{ vars.KEEPER_CROWDIN_RECORD_ID }}/field/login > env:CROWDIN_PROJECT_ID
-            ${{ vars.KEEPER_CROWDIN_RECORD_ID }}/field/password > env:CROWDIN_PERSONAL_TOKEN
-
       - name: Checkout KireiBPM web components
         uses: actions/checkout@v4
           
@@ -33,17 +28,3 @@ jobs:
           import_eq_suggestions: true
           create_pull_request: false
           crowdin_branch_name: "${{ github.ref_name }}"
-
-      - name: Send message to Slack channel
-        if: failure()
-        uses: bonitasoft/notify-slack-action@v1
-        with:
-          keeper-secret-config: ${{ secrets.KSM_CONFIG }}
-          channel-id: ${{ vars.UID_SLACK_CHANNEL_ID }}
-          message: |
-            :fire:  Upload l10n from Crowdin for ${{ github.ref_name }} failed.
-            
-            @channel *We need someone* !
-            
-            - Add a :fire_extinguisher:if you take the action to resolve the conflicts (only one person is required)
-            - Add a :sweat_drops: when it’s done (and eventually a :party_parrot: )"
