@@ -79,3 +79,7 @@ With it,you can write your test in ES6.
 - To work, our web component needs to be inserted in a page which load web components API polyfills like this:
   `<script src="../../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>`. This is the app which has to include them and not in the bundle, to avoid duplication and to separate responsibilities. The page has to be aware that it uses web component inside.
 - It could be an error on mordern browsers with customElements API (customElements.define) by compiling in ES5. See https://github.com/webcomponents/webcomponentsjs#custom-elements-es5-adapterjs
+
+# License
+
+This module is distributed as Open Source software under the GNU General Public License version 2. See the repository root LICENSE file for details.
