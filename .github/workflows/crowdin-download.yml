@@ -5,18 +5,23 @@ on:
     - cron: '0 3 * * 0'
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   download-l10n-from-crowdin:
     runs-on: ubuntu-latest
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch || 'master' }}
+      PR_TOKEN: ${{ secrets.KIREIBPM_CI_PAT != '' && secrets.KIREIBPM_CI_PAT || github.token }}
       CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
       CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          token: ${{ github.token }}
+          token: ${{ env.PR_TOKEN }}
 
       - name: Install crowdin-cli
         run: |
@@ -40,7 +45,7 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         id: create-pr
         with:
-          token: ${{ github.token }}
+          token: ${{ env.PR_TOKEN }}
           branch: feat/${{ env.DEFAULT_BRANCH }}/update-translations
           base: ${{ env.DEFAULT_BRANCH }}
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
