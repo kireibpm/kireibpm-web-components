@@ -1,8 +1,8 @@
 {
-  "help": "Seleccione una consulta de entre las 2 listas. Si existen, defina los valores de los filtros",
-  "defaultQueriesTitle": "Consultas 'Find by' basadas en un atributo",
-  "additionalQueriesTitle": "Consultas adicionales",
-  "filterTitlePrefix": "Filtros de la consulta",
-  "tip1": "Si arrastra y suelta un Objeto de Negocio, ahora puede utilizar la interfaz de usuario generada, o adaptarlo a sus necesidades. Si ha creado una nueva variable, puede crear su propia interfaz de usuario usando esta variable.",
-  "tip2": "El tipo de retorno de la variable de datos de negocio generada es un array."
+  "help": "Select a query from one of the 2 lists. If any, enter the filter value(s)",
+  "defaultQueriesTitle": "'Find By' queries on an attribute",
+  "additionalQueriesTitle": "Additional queries",
+  "filterTitlePrefix": "Filter the query of",
+  "tip1": "If you dragged and dropped a Business Object, you can now use the generated user interface, or adapt it to your needs. If you created a new variable, you can create your own user interface using this variable.",
+  "tip2": "The return type of the generated Business Data variable is an array."
 }
