@@ -48,9 +48,9 @@ fi
 
 cd "$COMPONENT_PATH" || exit
 
-PACKAGE_NAME=$(npm pkg get name | tr -d '"')
-PACKAGE_VERSION=$(npm pkg get version | tr -d '"')
-PACKAGE_MODULE=$(npm pkg get module | tr -d '"')
+PACKAGE_NAME=$(node -p "require('./package.json').name")
+PACKAGE_VERSION=$(node -p "require('./package.json').version")
+PACKAGE_MODULE=$(node -p "require('./package.json').module || ''")
 NPM_USER=$(npm whoami)
 
 if [ "$NPM_USER" ]; then
