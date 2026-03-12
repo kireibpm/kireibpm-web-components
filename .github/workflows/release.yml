@@ -54,11 +54,3 @@ jobs:
           ./components/infrastructure/publish.sh --component=${{github.event.inputs.component}}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Send message to Slack channel
-        uses: act10ns/slack@v1
-        if: ${{ failure() && (github.ref == 'refs/heads/master') }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_INCOMING_WEBHOOK_URL }}
-        with:
-          status: ${{ job.status }}
