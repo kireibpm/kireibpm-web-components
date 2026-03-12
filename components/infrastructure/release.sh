@@ -60,7 +60,7 @@ cd "$COMPONENT_PATH" || exit
 
 ## Release component and get new version
 SEMVER_VERSION=$(npm version "$RELEASETYPE")
-SEMVER_VERSION=${SEMVER_VERSION:1}
+SEMVER_VERSION=${SEMVER_VERSION##*@}
 
 # Commit and push release
 git commit -a -m "$COMPONENT: release packages v$SEMVER_VERSION"
