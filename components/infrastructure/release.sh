@@ -59,8 +59,8 @@ COMPONENT_PATH="$(find $BASE_DIR -name "$COMPONENT")"
 cd "$COMPONENT_PATH" || exit
 
 ## Release component and get new version
-SEMVER_VERSION=$(npm version "$RELEASETYPE")
-SEMVER_VERSION=${SEMVER_VERSION##*@}
+npm version "$RELEASETYPE" --no-git-tag-version >/dev/null
+SEMVER_VERSION=$(npm pkg get version | tr -d '"')
 
 # Commit and push release
 git commit -a -m "$COMPONENT: release packages v$SEMVER_VERSION"
