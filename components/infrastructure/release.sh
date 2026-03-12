@@ -60,7 +60,7 @@ cd "$COMPONENT_PATH" || exit
 
 ## Release component and get new version
 npm version "$RELEASETYPE" --no-git-tag-version >/dev/null
-SEMVER_VERSION=$(npm pkg get version | tr -d '"')
+SEMVER_VERSION=$(node -p "require('./package.json').version")
 
 # Commit and push release
 git commit -a -m "$COMPONENT: release packages v$SEMVER_VERSION"
