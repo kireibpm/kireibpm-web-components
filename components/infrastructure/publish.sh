@@ -1,7 +1,9 @@
 #!/bin/bash
 
+set -euo pipefail
+
 usage() {
-  command=$(basename $0)
+  command=$(basename "$0")
   echo ""
   echo -e "SYNOPSIS"
   echo -e "    $command --component=<component>"
@@ -14,38 +16,55 @@ usage() {
   echo ""
   echo -e "  --help                   display this help"
   echo ""
-  exit 1;
+  exit 1
 }
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-BASE_DIR=$SCRIPT_DIR/..
+BASE_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
 
 for i in "$@"; do
-    case $i in
-        --component=*)
-        COMPONENT="${i#*=}"
-        shift
-        ;;
-         --help)
-        usage
-        ;;
-    esac
+  case $i in
+    --component=*)
+      COMPONENT="${i#*=}"
+      shift
+      ;;
+    --help)
+      usage
+      ;;
+  esac
 done
 
 if [ -z "$COMPONENT" ]; then
-  echo "ERROR: --component is required";
-  usage;
+  echo "ERROR: --component is required"
+  usage
 fi
 
-COMPONENT_PATH=$(find $BASE_DIR -name $COMPONENT)
+COMPONENT_PATH=$(find "$BASE_DIR/packages" -type d -name "$COMPONENT" | head -n 1)
+
+if [ -z "$COMPONENT_PATH" ]; then
+  echo "ERROR: component '$COMPONENT' not found under $BASE_DIR/packages"
+  exit 1
+fi
+
 cd "$COMPONENT_PATH" || exit
 
-## Push on npm repository
-# Check if user is logged on npm registry
+PACKAGE_NAME=$(npm pkg get name | tr -d '"')
+PACKAGE_VERSION=$(npm pkg get version | tr -d '"')
+PACKAGE_MODULE=$(npm pkg get module | tr -d '"')
 NPM_USER=$(npm whoami)
 
 if [ "$NPM_USER" ]; then
-    npm ci
-    npm publish --ignore-scripts --access public
-    echo "Publish ${COMPONENT} on npm registry as  ${NPM_USER}"
+  if [ -n "$PACKAGE_MODULE" ] && [ ! -f "$PACKAGE_MODULE" ]; then
+    npm install
+    npm run bundle --if-present
+  fi
+
+  if [ -n "$PACKAGE_MODULE" ] && [ ! -f "$PACKAGE_MODULE" ]; then
+    echo "ERROR: expected module artifact '$PACKAGE_MODULE' is missing for $PACKAGE_NAME"
+    exit 1
+  fi
+
+  npm pack --dry-run >/dev/null
+  npm publish --ignore-scripts --access public
+  echo "Published ${PACKAGE_NAME}@${PACKAGE_VERSION} on npm registry as ${NPM_USER}"
 fi

@@ -1,47 +1,56 @@
-name: Release web component
+name: Release npm package
 
 on:
   workflow_dispatch:
     inputs:
       component:
-        description: Component to release. Exemple =>  query-selector
+        description: Component directory to release, for example search-box
         required: true
       releaseType:
-        description: Choose release type (semver following) [patch, minor, major, prepatch, preminor, premajor, prerelease]
+        description: Semver release type [patch, minor, major, prepatch, preminor, premajor, prerelease]
         required: true
         default: patch
       npmPublish:
-        description: true to push on npm repository
+        description: true to publish the released package to npm
         required: true
-        default: true
+        default: 'true'
+
+permissions:
+  contents: write
+
 jobs:
   release:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TOKEN: ${{ secrets.KIREIBPM_CI_PAT != '' && secrets.KIREIBPM_CI_PAT || github.token }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ env.RELEASE_TOKEN }}
 
       - name: Setup node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: 22
+          registry-url: https://registry.npmjs.org
 
       - name: Config git
         run: |
           git config --local user.email "ui-designer-bot@users.noreply.github.com"
           git config --local user.name "ui-designer-bot"
+
       - name: Release
         run: |
           ./components/infrastructure/release.sh \
           --component=${{github.event.inputs.component}} \
           --releaseType=${{github.event.inputs.releaseType}} \
           --git-push
+
       - name: Publish on NPM
         if: ${{ success() && github.event.inputs.npmPublish == 'true'}}
         run: |
-          npm config set //registry.npmjs.org/:_authToken ${{secrets.NPM_TOKEN}}
           ./components/infrastructure/publish.sh --component=${{github.event.inputs.component}}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

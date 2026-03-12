@@ -1,7 +1,9 @@
 #!/bin/bash
 
+set -euo pipefail
+
 usage() {
-  command=$(basename $0)
+  command=$(basename "$0")
   echo ""
   echo -e "SYNOPSIS"
   echo -e "    $command --component=<component> --releaseType=<releaseType> [--git-push]"
@@ -17,47 +19,47 @@ usage() {
   echo -e "  --git-push               Push commit and tag on github (default: false)"
   echo -e "  --help                   display this help"
   echo ""
-  exit 1;
+  exit 1
 }
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-BASE_DIR=$SCRIPT_DIR/..
+BASE_DIR=$(cd "$SCRIPT_DIR/.." && pwd)
 
 for i in "$@"; do
-    case $i in
-        --releaseType=*)
-        RELEASETYPE="${i#*=}"
-        shift
-        ;;
-        --component=*)
-        COMPONENT="${i#*=}"
-        shift
-        ;;
-        --git-push)
-        GIT_PUSH=true
-        shift
-        ;;
-         --help)
-        usage
-        ;;
-    esac
+  case $i in
+    --releaseType=*)
+      RELEASETYPE="${i#*=}"
+      shift
+      ;;
+    --component=*)
+      COMPONENT="${i#*=}"
+      shift
+      ;;
+    --git-push)
+      GIT_PUSH=true
+      shift
+      ;;
+    --help)
+      usage
+      ;;
+  esac
 done
 
 if [ -z "$RELEASETYPE" ]; then
-  echo "ERROR: --releaseType is required";
-  usage;
+  echo "ERROR: --releaseType is required"
+  usage
 fi
 
 if [ -z "$COMPONENT" ]; then
-  echo "ERROR: --component is required";
-  usage;
+  echo "ERROR: --component is required"
+  usage
 fi
 
 COMPONENT_PATH="$(find $BASE_DIR -name "$COMPONENT")"
 cd "$COMPONENT_PATH" || exit
 
 ## Release component and get new version
-SEMVER_VERSION=$(npm version $RELEASETYPE)
+SEMVER_VERSION=$(npm version "$RELEASETYPE")
 SEMVER_VERSION=${SEMVER_VERSION:1}
 
 # Commit and push release
@@ -67,6 +69,7 @@ git tag "$COMPONENT@$SEMVER_VERSION" -m "$COMPONENT@$SEMVER_VERSION: release pac
 ## Push commit and tag
 if [ "$GIT_PUSH" = true ]
 then
+  git push origin HEAD
   git push origin "$COMPONENT@$SEMVER_VERSION"
 fi
 
