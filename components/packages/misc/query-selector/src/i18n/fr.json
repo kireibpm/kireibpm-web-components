@@ -1,8 +1,8 @@
 {
-  "help": "Sélectionner une requête dans une des 2 listes. Si il y a des filtres, entrer une valeur pour chacun d'eux",
-  "defaultQueriesTitle": "Requêtes 'Find By' sur un attribut",
-  "additionalQueriesTitle": "Requêtes additionelles",
-  "filterTitlePrefix": "Filtrer la requête",
-  "tip1": "Si vous avez glissé-déposé un Objet Métier, vous pouvez maintenent utiliser l'interface utilisateur généré, ou l'adapter à vos besoins. Si vous avez créé une nouvelle variable, vous pouvez créer votre propre interface utilisateur en utilisant cette variable.",
-  "tip2": "Le type de retour de la variable Business Data générée est un tableau."
+  "help": "Select a query from one of the 2 lists. If any, enter the filter value(s)",
+  "defaultQueriesTitle": "'Find By' queries on an attribute",
+  "additionalQueriesTitle": "Additional queries",
+  "filterTitlePrefix": "Filter the query of",
+  "tip1": "If you dragged and dropped a Business Object, you can now use the generated user interface, or adapt it to your needs. If you created a new variable, you can create your own user interface using this variable.",
+  "tip2": "The return type of the generated Business Data variable is an array."
 }
